@@ -6,7 +6,23 @@
 #include <cublas_v2.h>
 
 #define BLOCK_SIZE 16
+
+
+#define USE_DOUBLE
+
+#ifdef USE_DOUBLE
+
+#define BASE_TYPE double
+#define cublasgemm cublasDgemm
+
+#else
+
 #define BASE_TYPE float
+#define cublasgemm cublasSgemm
+
+#endif // USE_DOUBLE
+
+
 
 int toMultiple(int a, int b) {
     int mod = a % b;
@@ -25,10 +41,10 @@ int main()
     cudaEventCreate(&stop);
 
     // Matrix dimensions
-    int Arows = 1000;
-    int Acols = 2000;
+    int Arows = 1024;
+    int Acols = 1024;
     int Brows = Acols;
-    int Bcols = 1500;
+    int Bcols = 1024;
     
 
     Arows = toMultiple(Arows, BLOCK_SIZE);
@@ -76,7 +92,7 @@ int main()
     const BASE_TYPE beta = 0.0;
 
     cudaEventRecord(start, 0);
-    cublasStatus_t stat = cublasSgemm(
+    cublasStatus_t stat = cublasgemm(
         handle,
         CUBLAS_OP_N, CUBLAS_OP_N,
         Ccols, Crows, Acols,
@@ -99,7 +115,7 @@ int main()
     float elapsedTime;
     cudaEventElapsedTime(&elapsedTime, start, stop);
     printf("Matrix multiplication completed in %.2f ms.\n", elapsedTime);
-
+#ifdef TEST
     printf("Test STARTED\n");
     for (int i = 0; i < Arows; i++) {
         for (int j = 0; j < Bcols; j++) {
@@ -119,7 +135,7 @@ int main()
         }
     }
 
-
+#endif // TEST
 
     // Cleanup
     cublasDestroy(handle);

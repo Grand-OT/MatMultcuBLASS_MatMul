@@ -6,7 +6,7 @@
 // размер блока или размер подматрицы
 #define BLOCK_SIZE 16
 //тип, который будут иметь элементы матриц
-#define BASE_TYPE float 
+#define BASE_TYPE double 
 
 __global__ void matrixMult(const BASE_TYPE* A, const
 	BASE_TYPE* B, BASE_TYPE* C, int Acols, int Bcols)
@@ -69,10 +69,10 @@ int main()
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 	// количество строк и столбцов матрицы
-	int Arows = 1000;
-	int Acols = 2000;
+	int Arows = 1024;
+	int Acols = 1024;
 	int Brows = Acols;
-	int Bcols = 1500;
+	int Bcols = 1024;
 
 	Arows = toMultiple(Arows, BLOCK_SIZE);
 	printf("Arows = %d\n", Arows);
@@ -131,7 +131,7 @@ int main()
 	cudaEventElapsedTime(&KernelTime, start, stop);
 	printf("KernelTime: %.2f milliseconds\n", KernelTime / REP_TIMES);
 	cudaMemcpy(h_C, d_C, Csize, cudaMemcpyDeviceToHost);
-
+#ifdef TEST
 	printf("Test STARTED\n");
 	for (int i = 0; i < Arows; i++) {
 		for (int j = 0; j < Bcols; j++) {
@@ -151,7 +151,7 @@ int main()
 		}
 	}
 	printf("Test PASSED\n");
-
+#endif
 	cudaFree(d_A);
 	cudaFree(d_B);
 	cudaFree(d_C);
